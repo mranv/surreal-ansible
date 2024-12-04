@@ -1,0 +1,7 @@
+---
+- name: Start TiKV nodes
+  shell: |
+    tiup playground kv \
+      --host {{ ansible_host }} \
+      --data-dir {{ tikv_data_dir }} \
+      --pd "{{ hostvars['pd1']['ansible_host'] }}:2379,{{ hostvars['pd2']['ansible_host'] }}:2379,{{ hostvars['pd3']['ansible_host'] }}:2379"

@@ -1,0 +1,9 @@
+---
+- name: Start PD nodes
+  shell: |
+    tiup playground pd \
+      --host {{ ansible_host }} \
+      --data-dir {{ pd_data_dir }} \
+      --pd.peer-urls="http://{{ ansible_host }}:2380" \
+      --pd.client-urls="http://{{ ansible_host }}:2379" \
+      --initial-cluster="pd1=http://{{ hostvars['pd1']['ansible_host'] }}:2380,pd2=http://{{ hostvars['pd2']['ansible_host'] }}:2380,pd3=http://{{ hostvars['pd3']['ansible_host'] }}:2380"

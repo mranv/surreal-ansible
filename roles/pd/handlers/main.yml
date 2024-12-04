@@ -1,0 +1,5 @@
+---
+- name: restart pd
+  systemd:
+    name: pd
+    state: restarted

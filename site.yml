@@ -1,0 +1,118 @@
+---
+# Initial system setup and TiKV cluster configuration
+- name: Setup TiKV Cluster
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install system dependencies
+      apt:
+        name: 
+          - curl
+          - wget
+          - gnupg
+          - apt-transport-https
+          - ca-certificates
+        state: present
+        update_cache: yes
+
+    - name: Create data directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      with_items:
+        - "{{ tikv_data_dir }}"
+        - "{{ pd_data_dir }}"
+        - "{{ surrealdb_data_dir }}"
+
+# TiUP installation
+- name: Setup TiUP
+  hosts: all
+  become: yes
+  tasks:
+    - name: Download and install TiUP
+      shell: curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
+
+    - name: Add TiUP to PATH
+      lineinfile:
+        path: /etc/profile
+        line: 'export PATH=/root/.tiup/bin:$PATH'
+        create: yes
+
+# Placement Driver deployment
+- name: Deploy PD Nodes
+  hosts: tikv_pd
+  become: yes
+  tasks:
+    - name: Start PD nodes
+      shell: |
+        tiup playground pd \
+          --host {{ ansible_host }} \
+          --data-dir {{ pd_data_dir }} \
+          --pd.peer-urls="http://{{ ansible_host }}:2380" \
+          --pd.client-urls="http://{{ ansible_host }}:2379" \
+          --initial-cluster="pd1=http://{{ hostvars['pd1']['ansible_host'] }}:2380,pd2=http://{{ hostvars['pd2']['ansible_host'] }}:2380,pd3=http://{{ hostvars['pd3']['ansible_host'] }}:2380"
+
+# TiKV store deployment
+- name: Deploy TiKV Stores
+  hosts: tikv_store
+  become: yes
+  tasks:
+    - name: Start TiKV nodes
+      shell: |
+        tiup playground kv \
+          --host {{ ansible_host }} \
+          --data-dir {{ tikv_data_dir }} \
+          --pd "{{ hostvars['pd1']['ansible_host'] }}:2379,{{ hostvars['pd2']['ansible_host'] }}:2379,{{ hostvars['pd3']['ansible_host'] }}:2379"
+
+# SurrealDB deployment
+- name: Deploy SurrealDB
+  hosts: surrealdb
+  become: yes
+  tasks:
+    - name: Download SurrealDB
+      get_url:
+        url: "https://github.com/surrealdb/surrealdb/releases/download/v{{ surrealdb_version }}/surreal-{{ surrealdb_version }}.linux-amd64.tar.gz"
+        dest: /tmp/surreal.tar.gz
+
+    - name: Extract SurrealDB
+      unarchive:
+        src: /tmp/surreal.tar.gz
+        dest: /usr/local/bin
+        remote_src: yes
+
+    - name: Create systemd service
+      template:
+        src: templates/surrealdb.service.j2
+        dest: /etc/systemd/system/surrealdb.service
+
+    - name: Start SurrealDB service
+      systemd:
+        name: surrealdb
+        state: started
+        enabled: yes
+
+# Role-based deployment
+- name: Setup Common Configuration
+  hosts: all
+  become: yes
+  roles:
+    - common
+
+- name: Deploy PD Nodes
+  hosts: tikv_pd
+  become: yes
+  roles:
+    - pd
+
+- name: Deploy TiKV Stores
+  hosts: tikv_store
+  become: yes
+  roles:
+    - tikv
+
+- name: Deploy SurrealDB
+  hosts: surrealdb
+  become: yes
+  roles:
+    - surrealdb

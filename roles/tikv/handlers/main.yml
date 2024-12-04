@@ -1,0 +1,5 @@
+---
+- name: restart tikv
+  systemd:
+    name: tikv
+    state: restarted

@@ -1,0 +1,17 @@
+[Unit]
+Description=TiKV Store Service
+After=network.target
+
+[Service]
+Type=simple
+User=tikv
+Group=tikv
+ExecStart=/root/.tiup/bin/tiup tikv \
+    --data-dir {{ tikv_data_dir }} \
+    --pd {{ groups['tikv_pd'] | map('regex_replace', '^(.*)$', hostvars['\1']['ansible_host']+':2379') | join(',') }}
+Restart=always
+RestartSec=5
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

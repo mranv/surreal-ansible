@@ -1,0 +1,30 @@
+---
+- name: Install system dependencies
+  apt:
+    name: 
+      - curl
+      - wget
+      - gnupg
+      - apt-transport-https
+      - ca-certificates
+    state: present
+    update_cache: yes
+
+- name: Create data directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - "{{ tikv_data_dir }}"
+    - "{{ pd_data_dir }}"
+    - "{{ surrealdb_data_dir }}"
+
+- name: Download and install TiUP
+  shell: curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
+
+- name: Add TiUP to PATH
+  lineinfile:
+    path: /etc/profile
+    line: 'export PATH=/root/.tiup/bin:$PATH'
+    create: yes

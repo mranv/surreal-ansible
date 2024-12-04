@@ -1,0 +1,40 @@
+---
+# Setup base configuration and dependencies on all hosts
+- name: Setup Common Configuration
+  hosts: all
+  become: yes
+  roles:
+    - role: common
+      tags: 
+        - common
+        - setup
+
+# Deploy Placement Driver nodes
+- name: Deploy PD Nodes
+  hosts: tikv_pd
+  become: yes
+  roles:
+    - role: pd
+      tags:
+        - pd
+        - tikv
+
+# Deploy TiKV storage nodes
+- name: Deploy TiKV Stores
+  hosts: tikv_store
+  become: yes
+  roles:
+    - role: tikv
+      tags:
+        - tikv
+        - storage
+
+# Deploy SurrealDB instances
+- name: Deploy SurrealDB
+  hosts: surrealdb
+  become: yes
+  roles:
+    - role: surrealdb
+      tags:
+        - surrealdb
+        - database

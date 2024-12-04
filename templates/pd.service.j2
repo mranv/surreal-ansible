@@ -1,0 +1,20 @@
+[Unit]
+Description=TiKV PD Service
+After=network.target
+
+[Service]
+Type=simple
+User=tikv
+Group=tikv
+ExecStart=/root/.tiup/bin/tiup pd \
+    --data-dir {{ pd_data_dir }} \
+    --name {{ inventory_hostname }} \
+    --client-urls http://{{ ansible_host }}:2379 \
+    --peer-urls http://{{ ansible_host }}:2380 \
+    --initial-cluster {{ groups['tikv_pd'] | map('regex_replace', '^(.*)$', '\\1=http://'+hostvars['\1']['ansible_host']+':2380') | join(',') }}
+Restart=always
+RestartSec=5
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,7 @@
+---
+system_packages:
+  - curl
+  - wget
+  - gnupg
+  - apt-transport-https
+  - ca-certificates

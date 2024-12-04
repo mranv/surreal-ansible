@@ -1,0 +1,46 @@
+# inventory/hosts.yml
+---
+all:
+  vars:
+    ansible_user: mranv
+    ansible_become: yes
+    ansible_become_method: sudo
+    ansible_ssh_private_key_file: ~/.ssh/id_ed25519
+    ansible_python_interpreter: /usr/bin/python3
+  children:
+    tikv_pd:
+      hosts:
+        pd1:
+          ansible_host: 192.168.122.123
+          pd_client_port: 2379
+          pd_peer_port: 2380
+        pd2:
+          ansible_host: 192.168.122.175
+          pd_client_port: 2379
+          pd_peer_port: 2380
+        pd3:
+          ansible_host: 192.168.122.176
+          pd_client_port: 2379
+          pd_peer_port: 2380
+    tikv_store:
+      hosts:
+        kv1:
+          ansible_host: 192.168.122.123
+          tikv_port: 20160
+        kv2:
+          ansible_host: 192.168.122.175
+          tikv_port: 20160
+        kv3:
+          ansible_host: 192.168.122.176
+          tikv_port: 20160
+    surrealdb:
+      hosts:
+        surreal1:
+          ansible_host: 192.168.122.123
+          surrealdb_port: 8000
+        surreal2:
+          ansible_host: 192.168.122.175
+          surrealdb_port: 8000
+        surreal3:
+          ansible_host: 192.168.122.176
+          surrealdb_port: 8000

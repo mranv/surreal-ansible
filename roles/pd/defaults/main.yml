@@ -1,0 +1,3 @@
+---
+pd_port: 2379
+pd_peer_port: 2380

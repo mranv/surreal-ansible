@@ -1,0 +1,10 @@
+---
+tikv_version: "7.1.1"
+surrealdb_version: "1.2.0"
+tikv_data_dir: "/data/tikv"
+pd_data_dir: "/data/pd"
+surrealdb_data_dir: "/data/surrealdb"
+surrealdb_user: "surrealdb"
+surrealdb_password: "{{ vault_surrealdb_password }}"
+root_user: "root"
+root_password: "{{ vault_root_password }}"
