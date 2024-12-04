@@ -1,4 +1,5 @@
 ---
+ansible_become_password: "{{ vault_sudo_password }}"
 tikv_version: "7.1.1"
 surrealdb_version: "1.2.0"
 tikv_data_dir: "/data/tikv"
